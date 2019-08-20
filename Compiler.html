@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>Compiler</title>
+<script src="Compiler.js"></script>
+</head>
+<body>
+<textarea id="program" cols="80" rows="30">
+a ← 6 + 4 * 9
+IF (a = 42)
+{
+DISPLAY ("true")
+}
+ELSE
+{
+DISPLAY ("false")
+}
+
+REPEAT 5 TIMES
+{
+DISPLAY ("HELLO")
+}
+
+REPEAT UNTIL a = 3
+{
+a ← a - 1
+}
+
+PROCEDURE hello()
+{
+RETURN ("HELLO")
+}
+</textarea>
+
+<button onclick="console.log(compiler(document.getElementById('program').value))">Compile</button>
+
+</body>
+</html>
