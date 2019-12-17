@@ -20,7 +20,7 @@ REPEAT 5 TIMES
 DISPLAY ("HELLO")
 }
 
-REPEAT UNTIL a = 3
+REPEAT UNTIL (a = 3)
 {
 a ← a - 1
 }
@@ -29,9 +29,34 @@ PROCEDURE hello()
 {
 RETURN ("HELLO")
 }
+
+DISPLAY(hello())
+ROTATE_RIGHT()
+MOVE_FORWARD()
+DISPLAY(CAN_MOVE("left"))
+a &#x2190; INPUT("WHAT IS A?")
+DISPLAY(a)
+a &#x2190; [6, 3]
+DISPLAY(a[1])
+APPEND(a, -4)
+REMOVE(a, 0)
+IF (LENGTH(a) = 2) {
+DISPLAY(RANDOM(0, 1))
+}
 </textarea>
-
-<button onclick="console.log(compiler(document.getElementById('program').value))">Compile</button>
-
+<button onclick="console.log(new Compiler(document.getElementById('program').value, [
+    [!window.document || window.document.getElementById('imageCanvas'),
+      !window.document || window.document.getElementById('robotCanvas')
+    ], window.prompt, true, [2, 3, [
+        [1, 0.5, 0],
+        [0, 0.5, 1]
+      ],
+      [0, 0]
+    ]
+  ]).compiled);">Compile</button>
+<span id="canvas">
+  <canvas id="robotCanvas" width="300" height="300"></canvas>
+  <canvas id="imageCanvas" width="300" height="300" style="display:none"></canvas>
+</span>
 </body>
 </html>

@@ -9,3 +9,54 @@
 
 This is a compiler for the AP CS Principles Exam Reference Language (ACPERL), written in JavaScript. It's currently still under development.
 You can try it out [here](https://turtlemaster19.github.io/acperl-compiler/Compiler.html).
+If that site is blocked, you can also try it on [Code.org's App Lab](https://studio.code.org/projects/applab/new) by pasting the JS file there and appending:
+```javascript
+console.log(new Compiler(
+  'a ← +6 - -5\n' +
+  'a ← 6 + 4 * 9\n' +
+  'IF (a = 42)\n' +
+  '{\n' +
+  'DISPLAY ("true")\n' +
+  '}\n' +
+  'ELSE\n' +
+  '{\n' +
+  'DISPLAY ("false")\n' +
+  '}\n' +
+  '\n' +
+  'REPEAT 5 TIMES\n' +
+  '{\n' +
+  'DISPLAY ("HELLO")\n' +
+  '}\n' +
+  '\n' +
+  'REPEAT UNTIL (a = 3)\n' +
+  '{\n' +
+  'a ← a - 1\n' +
+  '}\n' +
+  'DISPLAY (a)\n' +
+  'PROCEDURE hello()\n' +
+  '{\n' +
+  'RETURN ("HELLO")\n' +
+  '}\n' +
+  'ROTATE_RIGHT()\n' +
+  'MOVE_FORWARD()\n' +
+  'DISPLAY(CAN_MOVE("left"))\n' +
+  'a \u2190 INPUT("WHAT IS A?")\n' +
+  'DISPLAY(a)\n' +
+  'a \u2190 [6, 3]\n' +
+  'DISPLAY(a[1])\n' +
+  'APPEND(a, -4)\n' +
+  'REMOVE(a, 0)\n' +
+  'IF (LENGTH(a) = 2) {\n' +
+  'DISPLAY(RANDOM(0, 1))\n' +
+  '}\n' +
+  'DISPLAY(a)', [
+    [!window.document || window.document.getElementById("imageCanvas"),
+      !window.document || window.document.getElementById("robotCanvas")
+    ], window.prompt, true, [2, 3, [
+        [1, 0.5, 0],
+        [0, 0.5, 1]
+      ],
+      [0, 0]
+    ]
+  ]).compiled);
+```
