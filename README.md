@@ -9,26 +9,25 @@
 
 This is a compiler for the AP CS Principles Exam Reference Language (ACPERL), written in JavaScript. It's currently still under development.
 You can try it out [here](https://turtlemaster19.github.io/acperl-compiler/Compiler.html).
-If that site is blocked, you can also try it on [Code.org's App Lab](https://studio.code.org/projects/applab/new) by pasting the JS file there and appending:
+If that site is blocked, you can also try it on [Code.org's App Lab](https://studio.code.org/projects/applab/new) by pasting the JS file there,
+or on [JS Fiddle](https://jsfiddle.net) by pasting the HTML lines in the ```<span>``` tags and the JS file, and appending to the JS on either:
 ```javascript
 console.log(new Compiler(
-  'a ← +6 - -5\n' +
-  'a ← 6 + 4 * 9\n' +
+  'a \u2190 +6 - --5\n' +
+  'a \u2190 .6 + 4 * .9\n' +
   'IF (a = 42)\n' +
   '{\n' +
   'DISPLAY ("true")\n' +
   '}\n' +
   'ELSE\n' +
   '{\n' +
-  'DISPLAY ("false")\n' +
+  'DISPLAY (a)\n' +
   '}\n' +
-  '\n' +
   'REPEAT 5 TIMES\n' +
   '{\n' +
   'DISPLAY ("HELLO")\n' +
   '}\n' +
-  '\n' +
-  'REPEAT UNTIL (a = 3)\n' +
+  'REPEAT UNTIL (a = 3 OR a < 0)\n' +
   '{\n' +
   'a ← a - 1\n' +
   '}\n' +
@@ -37,6 +36,7 @@ console.log(new Compiler(
   '{\n' +
   'RETURN ("HELLO")\n' +
   '}\n' +
+  'DISPLAY(hello())\n' +
   'ROTATE_RIGHT()\n' +
   'MOVE_FORWARD()\n' +
   'DISPLAY(CAN_MOVE("left"))\n' +
@@ -45,6 +45,10 @@ console.log(new Compiler(
   'a \u2190 [6, 3]\n' +
   'DISPLAY(a[1])\n' +
   'APPEND(a, -4)\n' +
+  'FOR EACH item IN a\n' +
+  '{\n' +
+  'DISPLAY(item)\n' +
+  '}\n' +
   'REMOVE(a, 0)\n' +
   'IF (LENGTH(a) = 2) {\n' +
   'DISPLAY(RANDOM(0, 1))\n' +
@@ -58,5 +62,5 @@ console.log(new Compiler(
       ],
       [0, 0]
     ]
-  ]).compiled);
+  ]).comp);
 ```

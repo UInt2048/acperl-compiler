@@ -5,31 +5,29 @@
 </head>
 <body>
 <textarea id="program" cols="80" rows="30">
-a ← 6 + 4 * 9
+a &#x2190; +6 - --5
+a &#x2190; 6 + 4 * 9
 IF (a = 42)
 {
 DISPLAY ("true")
 }
 ELSE
 {
-DISPLAY ("false")
+DISPLAY (a)
 }
-
 REPEAT 5 TIMES
 {
 DISPLAY ("HELLO")
 }
-
-REPEAT UNTIL (a = 3)
+REPEAT UNTIL (a = 3 OR a < 0)
 {
 a ← a - 1
 }
-
+DISPLAY (a)
 PROCEDURE hello()
 {
 RETURN ("HELLO")
 }
-
 DISPLAY(hello())
 ROTATE_RIGHT()
 MOVE_FORWARD()
@@ -39,10 +37,15 @@ DISPLAY(a)
 a &#x2190; [6, 3]
 DISPLAY(a[1])
 APPEND(a, -4)
+FOR EACH item IN a
+{
+DISPLAY(item)
+} 
 REMOVE(a, 0)
 IF (LENGTH(a) = 2) {
 DISPLAY(RANDOM(0, 1))
 }
+DISPLAY(a)
 </textarea>
 <button onclick="console.log(new Compiler(document.getElementById('program').value, [
     [!window.document || window.document.getElementById('imageCanvas'),

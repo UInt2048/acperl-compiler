@@ -6,9 +6,8 @@
 //jshint node: true
 //jshint latedef: true
 //jshint undef: true
-"use strict";
-
 function Compiler(program, $robotArray, $options, $evil) {
+  "use strict";
   var acperl = this;
   acperl.CompilerSettings = function(semicolons) {
     this.semicolons = semicolons || false;
@@ -72,12 +71,13 @@ function Compiler(program, $robotArray, $options, $evil) {
         "Instead, there's a: " + e(1) + "\n\n" + line() :
         _this.num === 8 ? "The keyword, " + e(1) + ", shouldn't be here." +
         "\n\n" + line() :
-        _this.num === 9 ? "PROCEDURE requires a name, instead of " + e(1) +
+        _this.num === 9 ? e(2) + " requires a name, instead of " + e(1) +
         "\n\n" + line() :
-        _this.num === 10 ? "" + e(2) + " requires parentheses around the " +
+        _this.num === 10 ? e(2) + " requires parentheses around the " +
         "condition, instead of: " + e(1) + "\n\n" + line() :
-        _this.num === 11 ? "REPEAT requires 'UNTIL', or a number followed " +
-        "by 'TIMES', instead of: " + e(1) + "\n\n" + line() :
+        _this.num === 11 ? (e(2) === "REPEAT" ? "REPEAT requires 'UNTIL'," +
+          "or a number followed by 'TIMES'" : "FOR EACH requires 'IN'") +
+        ", instead of: " + e(1) + "\n\n" + line() :
         _this.num === 12 ? "The body of a " + e(2) + " must start with '{', " +
         "instead of: " + e(1) + "\n\n" + line() :
         _this.num === 13 ? "Missing closing brace, '}', in " + e(1) + " body." +
@@ -92,7 +92,7 @@ function Compiler(program, $robotArray, $options, $evil) {
         _this.num === 17 ? "The keyword, " + e(1) + ", isn't supported yet. " +
         "You shouldn't encounter this. If you do, please go to GitHub and " +
         "create an issue.\n\n" + line() :
-        _this.num === 18 ? "" + e(1) + " hasn't been defined. Please check " +
+        _this.num === 18 ? e(1) + " hasn't been defined. Please check " +
         "your spelling matches.\n\n" + line() :
         _this.num === 19 ? "The node, " + e(1) + ", isn't supported yet. You " +
         "shouldn't encounter this. If you do, please go to GitHub and create " +
@@ -327,14 +327,14 @@ function Compiler(program, $robotArray, $options, $evil) {
       current += increment;
     }
     while (current < input.length) { // Loop through input
-      var value, char = input[current]; // Current character
+      var value = '',
+        char = input[current]; // Current character
       if (!char) throw new Error(acperl.err(1, [line, char], acperl.program));
       else if (char === '(' || char === ')') insert("parenthesis", char, 1);
       else if (char === '{' || char === '}') insert("curlybracket", char, 1);
       else if (char === '[' || char === ']') insert("bracket", char, 1);
       else if (char === ',') insert("comma", ",", 1);
       else if (char === '<' && input[current + 1] !== ' ') { // Comments
-        value = '';
         char = input[++current];
         while (!(char === '>' && input[current - 1] !== ' ')) {
           value += char;
@@ -350,16 +350,16 @@ function Compiler(program, $robotArray, $options, $evil) {
         line++;
         current++;
       } else if (/\s/.test(char)) current++; // Whitespace
-      else if (/[0-9]/.test(char)) {
-        value = '';
-        while (/[0-9]/.test(char)) { // Test if following characters are numbers
+      else if (/[0-9]/.test(char) ||
+        char === "." && /[0-9]/.test(input[current + 1])) { // Numbers
+        while (/[0-9]/.test(char) ||
+          char === "." && /[0-9]/.test(input[current + 1])) {
           value += char; // Add character to string
           char = input[++current]; // Increment current and char and continue
           if (current >= input.length) break;
         }
         insert("number", value, 0);
       } else if (char === '"') {
-        value = '';
         char = input[++current]; // We don't need to tokenize the quote
         while (char !== '"') {
           if (char === '\\') char = "\\\\"; // Escape character if needed
@@ -379,7 +379,6 @@ function Compiler(program, $robotArray, $options, $evil) {
         }
         insert("string", value, 1);
       } else if (char === ';' && acperl.settings.semicolons) { // 1-line Comment
-        value = '';
         char = input[++current];
         while (!/\n/.test(char)) {
           value += char;
@@ -388,14 +387,13 @@ function Compiler(program, $robotArray, $options, $evil) {
         }
         insert("singlecomment", value, 1);
       } else if (/[A-Z_]/i.test(char)) { // Name
-        value = '';
         while (/[A-Z_]/i.test(char)) {
           value += char; // Add character to string
           char = input[++current]; // Increment current and char and continue
           if (current >= input.length) break;
         }
-        insert(/^(IF|ELSE|REPEAT|UNTIL|TIMES|PROCEDURE)$/.test(value) ?
-          "keyword" : /^(MOD|AND|OR|NOT)$/.test(value) ? "operator" :
+        insert(/^(IF|ELSE|REPEAT|UNTIL|TIMES|PROCEDURE|FOR|EACH|IN)$/.test(
+            value) ? "keyword" : /^(MOD|AND|OR|NOT)$/.test(value) ? "operator" :
           /^(true|false)$/.test(value) ? "boolean" : "name", value, 0);
       } else throw new Error(acperl.err(4, [line, char], acperl.program));
     }
@@ -477,7 +475,7 @@ function Compiler(program, $robotArray, $options, $evil) {
           if (t[c + 1].type === "name" && t[c + 2].type === "parenthesis" &&
             t[c + 2].value === "(") c++; // In case of call expression
           var $c = c;
-          if (t[c + 1].type === "operator") $c++;
+          while (t[$c + 1].type === "operator") $c++;
           if (t[$c + 1].value !== '(' && t[$c + 1].value !== '[' ||
             $c === t.length - 1) {
             t.splice($c + 2, 0, {
@@ -607,8 +605,8 @@ function Compiler(program, $robotArray, $options, $evil) {
         return ret(1, l, "CallExpression", null, node); // Skip parenthesis
       }
       if (t[c].type === "keyword") {
-        if (/^(UNTIL|TIMES|ELSE)$/.test(t[c].value)) throw new Error(acperl.err(
-          8, [t[c].line, t[c].value], acperl.program));
+        if (/^(UNTIL|TIMES|ELSE|EACH|IN)$/.test(t[c].value)) throw new Error(
+          acperl.err(8, [t[c].line, t[c].value], acperl.program));
         node = {
           type: "BlockExpression",
           name: t[c++].value,
@@ -617,6 +615,11 @@ function Compiler(program, $robotArray, $options, $evil) {
           body: [],
           _else: null
         };
+        if (node.name === "FOR" && t[c].value === "EACH") {
+          node.name = "FOR EACH";
+          c++;
+        } else if (node.name === "FOR") throw new Error(acperl.err(
+          8, [t[c].line, node.name], acperl.program));
         if (node.name === "REPEAT" && t[c].value === "UNTIL") {
           node.name = "REPEAT UNTIL";
           c++;
@@ -626,18 +629,25 @@ function Compiler(program, $robotArray, $options, $evil) {
           acperl.declared.push(node.funcName);
           c++;
         } else if (node.name === "PROCEDURE" && t[c].type !== "name") throw new
-        Error(acperl.err(9, [t[c].line, t[c].value], acperl.program));
+        Error(acperl.err(9, [t[c].line, t[c].value, node.name], acperl.program));
         if ((node.name === "IF" || node.name === "REPEAT UNTIL" ||
             node.name === "PROCEDURE") && t[c].value !== "(") throw new
         Error(acperl.err(10, [t[c].line, t[c].value, node.name],
           acperl.program));
+        else if (node.name === "FOR EACH" && t[c].type !== "name") throw new
+        Error(acperl.err(9, [t[c].line, t[c].value, node.name], acperl.program));
         if (t[c + 1].value === ')' && t[c + 1].type === "parenthesis") c += 2;
         else node.cond = recursive();
         if (node.name === "PROCEDURE" && node.cond && node.cond.name)
           node.cond.name = null;
-        if (node.name === "REPEAT" && t[c].value !== "TIMES") throw new
-        Error(acperl.err(11, [t[c].line, t[c].value], acperl.program));
+        if (node.name === "REPEAT" && t[c].value !== "TIMES" ||
+          node.name === "FOR EACH" && t[c].value !== "IN") throw new
+        Error(acperl.err(11, [t[c].line, t[c].value, node.name], acperl.program));
         if (node.name === "REPEAT" && t[c].value === "TIMES") c++;
+        else if (node.name === "FOR EACH" && t[c].value === "IN") {
+          c++;
+          node.funcName = t[c++].value;
+        }
         var addBody = function addBody(body) {
           if (t[c].value !== "{") throw new Error(acperl.err(
             12, [t[c].line, t[c].value, node.name], acperl.program));
@@ -668,115 +678,112 @@ function Compiler(program, $robotArray, $options, $evil) {
     while (c < t.length) ast.body.push(recursive());
     return ast;
   };
-  acperl.codeGen = function codeGen(n) {
-    var mapGen = function mapGen(mapVal) {
-        return Array.isArray(mapVal) ? mapVal.map(function(currentValue) {
-          return acperl.codeGen(currentValue);
-        }) : acperl.codeGen(mapVal);
+  acperl.codeGen = function(n) {
+    var repeat = function(string, times) {
+        for (var repString = ""; times > 0; times--) repString += string;
+        return repString;
       },
-      r = function(val) {
-        return val || '';
+      cGen = function(n) {
+        var mapGen = function mapGen(mapVal) {
+            return Array.isArray(mapVal) ? mapVal.map(function(currentValue) {
+              return cGen(currentValue);
+            }) : cGen(mapVal);
+          },
+          r = function(val) {
+            return val || '';
+          },
+          stdLib = //'"use strict";\n'+
+          "function $DISPLAY(expression) {return console.log(expression);}\n" +
+          "function $INPUT(text) {return robot.input(text);}\n" +
+          "function $RANDOM(min, max) {return robot.random(min, max);}\n" +
+          "function $INSERT(list, i, val) {return list.splice(i, 0, val);}\n" +
+          "function $APPEND(list, val) {return list.push(val);}\n" +
+          "function $REMOVE(list, i) {return list.splice(i, 1);}\n" +
+          "function $LENGTH(list) {return list.length;}\n" +
+          "function $MOVE_FORWARD() {return robot.forward(25);}\n" +
+          "function $ROTATE_LEFT() {return robot.left(90);}\n" +
+          "function $ROTATE_RIGHT() {return robot.right(90);}\n" +
+          "function $CAN_MOVE(dir) {return robot.canMove(dir);}\n",
+          ops = [
+            ['!', "NOT"],
+            ['*', '*'],
+            ['/', '/'],
+            ['%', "MOD"],
+            ['+', '+'],
+            ['-', '-'],
+            ['>', '>'],
+            ['<', '<'],
+            [">=", '\u2265'],
+            ["<=", '\u2264'],
+            ['===', '='],
+            ["!==", '\u2260'],
+            ["&&", "AND"],
+            ["||", "OR"],
+            ['=', '\u2190']
+          ],
+          isAnOperator = function(testName) {
+            if (!testName) return false;
+            for (var i = 0; i < ops.length; i++)
+              if (ops[i][1] === testName) return i + 1; // op index
+            return false;
+          },
+          includes = function(arr, item) {
+            return arr.indexOf(item) + 1;
+          };
+        if (!n) return r(n);
+        var ret = void 0,
+          op = void 0;
+        if (n.type === "Program") return r(stdLib + mapGen(n.body).join('\n'));
+        else if (n.type === "BlockExpression") {
+          if (!(ret = n.name === "IF" ? "if (" + cGen(n.cond) +
+              ") {\n" + mapGen(n.body).join('\n') + "\n}" + (n._else ?
+                " else {\n" + mapGen(n._else).join('\n') + "\n}" : "") :
+              n.name === "REPEAT" ? "for (var _" + acperl.count + " = 0; _" +
+              acperl.count + " < " + cGen(n.cond) + "; _" + acperl.count +
+              "++) {\n" + mapGen(n.body).join('\n') + "\n}" :
+              n.name === "REPEAT UNTIL" ? "while (!(" + cGen(n.cond) +
+              ")) {\n" + mapGen(n.body).join('\n') + "\n}" : n.name ===
+              "PROCEDURE" ? "function " + '$' + n.funcName + (n.cond ?
+                cGen(n.cond) : "()") + " {\n" + mapGen(n.body).join('\n') +
+              "\n}" : n.name === "FOR EACH" ? "$" + n.funcName + ".forEach(" +
+              "function(" + cGen(n.cond) + ") {\n" + mapGen(n.body).join('\n') +
+              "\n})" : ""))
+            throw new Error(acperl.err(17, [n.line, n.name], acperl.program));
+          return r(ret);
+        } else if (n.type === "CallExpression") {
+          if ((op = isAnOperator(n.name))) return r((n.name === '\u2190' ? "" :
+            "(") + (n.params.length === 1 ? ops[op - 1][0] + cGen(n.params[0]) :
+              cGen(n.params.shift()) + " " + ops[op - 1][0] + " " +
+              mapGen(n.params).join('')) + (n.name === '\u2190' ? "" : ")"));
+          if (!n.name) return r('(' + (n.params.length < 1 ? "" :
+            mapGen(n.params).join(', ')) + ')');
+          if (!includes(acperl.builtIn, n.name) && !includes(acperl.declared,
+              n.name) && n.name !== "RETURN") throw new Error(acperl.err(
+            18, [n.line, n.name], acperl.program));
+          return r((n.name !== "RETURN" ? '$' + n.name : "return") + '(' +
+            (n.params.length < 1 ? "" : mapGen(n.params).join(', ')) + ')');
+        } else if (n.type === "Array") return r('[' + (n.elements.length < 1 ?
+          "" : mapGen(n.elements).join(', ')) + ']');
+        else if (n.type === "ArrayElement") return r("$" + n.name + "[(" +
+          cGen(n.value) + " - 1)]");
+        else if (/^(Boolean|NumberLiteral)$/.test(n.type)) return r(n.value);
+        else if (n.type === "Name") return r("$" + n.value);
+        else if (n.type === "StringLiteral") return r('"' + n.value + '"');
+        else if (n.type === "Commment") return r("/*" + n.value + "*/");
+        else if (n.type === "SingleComment") return r("//" + n.value);
+        else throw new Error(acperl.err(19, [n.line, n.name], acperl.program));
       },
-      cGen = function(val) {
-        return acperl.codeGen(val);
-      },
-      stdLib = //'"use strict";\n'+
-      "function $DISPLAY(expression) {return console.log(expression);}\n" +
-      "function $INPUT(text) {return robot.input(text);}\n" +
-      "function $RANDOM(min, max) {return robot.random(min, max);}\n" +
-      "function $INSERT(list, i, value) {return list.splice(i, 0, value);}\n" +
-      "function $APPEND(list, value) {return list.push(value);}\n" +
-      "function $REMOVE(list, i) {return list.splice(i, 1);}\n" +
-      "function $LENGTH(list) {return list.length;}\n" +
-      "function $MOVE_FORWARD() {return robot.forward(25);}\n" +
-      "function $ROTATE_LEFT() {return robot.left(90);}\n" +
-      "function $ROTATE_RIGHT() {return robot.right(90);}\n" +
-      "function $CAN_MOVE(dir) {return robot.canMove(dir);}\n",
-      ops = [
-        ['!', "NOT"],
-        ['*', '*'],
-        ['/', '/'],
-        ['%', "MOD"],
-        ['+', '+'],
-        ['-', '-'],
-        ['>', '>'],
-        ['<', '<'],
-        [">=", '\u2265'],
-        ["<=", '\u2264'],
-        ['===', '='],
-        ["!==", '\u2260'],
-        ["&&", "AND"],
-        ["||", "OR"],
-        ['=', '\u2190']
-      ],
-      isAnOperator = function(testName) {
-        if (!testName) return false;
-        for (var i = 0; i < ops.length; i++)
-          if (ops[i][1] === testName) return i + 1; // op index
-        return false;
-      },
-      includes = function(arr, item) {
-        return arr.indexOf(item) + 1;
-      };
-    if (!n) return r(n);
-    var ret = void 0,
-      op = void 0;
-    if (n.type === "Program") return r(stdLib + mapGen(n.body).join('\n'));
-    else if (n.type === "BlockExpression") {
-      if (!(ret = n.name === "IF" ? "if (" + cGen(n.cond) +
-          ") {\n" + mapGen(n.body).join('\n') + "\n}" + (n._else ? " else {\n" +
-            mapGen(n._else).join('\n') + "\n}" : "") : n.name === "REPEAT" ?
-          "for (var _" + acperl.count + " = 0; _" + acperl.count + " < " +
-          cGen(n.cond) + "; _" + acperl.count + "++) {\n" +
-          mapGen(n.body).join('\n') + "\n}" : n.name === "REPEAT UNTIL" ?
-          "while (!(" + cGen(n.cond) + ")) {\n" + mapGen(n.body).join('\n') +
-          "\n}" : n.name === "PROCEDURE" ? "function " + '$' + n.funcName +
-          (n.cond ? cGen(n.cond) : "()") + " {\n" + mapGen(n.body).join('\n') +
-          "\n}" : ""))
-        throw new Error(acperl.err(17, [n.line, n.name], acperl.program));
-      return r(ret);
-    } else if (n.type === "CallExpression") {
-      if ((op = isAnOperator(n.name))) return r(n.params.length === 1 ?
-        ops[op - 1][0] + cGen(n.params[0]) : cGen(n.params.shift()) +
-        " " + ops[op - 1][0] + " " + mapGen(n.params).join(''));
-      if (!n.name) return r('(' + (n.params.length < 1 ? "" :
-        mapGen(n.params).join(', ')) + ')');
-      if (!includes(acperl.builtIn, n.name) && !includes(acperl.declared,
-          n.name) && n.name !== "RETURN") throw new Error(acperl.err(
-        18, [n.line, n.name], acperl.program));
-      return r((n.name !== "RETURN" ? '$' + n.name : "return") + '(' +
-        (n.params.length < 1 ? "" : mapGen(n.params).join(', ')) + ')' +
-        (n.name === "RETURN" ? ';' : ''));
-    } else if (n.type === "Array") return r('[' + (n.elements.length < 1 ? "" :
-      mapGen(n.elements).join(', ')) + ']');
-    else if (n.type === "ArrayElement") return r(n.name + "[" + cGen(n.value) +
-      " - 1]");
-    else if (/^(Boolean|Name|NumberLiteral)$/.test(n.type)) return r(n.value);
-    else if (n.type === "StringLiteral") return r('"' + n.value + '"');
-    else if (n.type === "Commment") return r("/*" + n.value + "*/");
-    else if (n.type === "SingleComment") return r("//" + n.value);
-    else throw new Error(acperl.err(19, [n.line, n.name], acperl.program));
-  };
-  acperl.codeStyle = function(generated) {
-    var arr = generated.split('\n'),
-      repeat = function(string, times) {
-        for (var repeatedString = ""; times > 0; times--)
-          repeatedString += string;
-        return repeatedString;
-      };
-    for (var str = '', ind = 0, line = 0; line < arr.length; line++) {
-      var lastChar = arr[line].slice(-1),
-        linearr = arr[line].split('');
-      for (var $count = 0, $a = 0, $s = 0; $count < linearr.length; $count++) {
-        if (linearr[$count] === "}") {
-          if ($a <= 0) $s += 2;
-          else $a -= 2;
-        } else if (linearr[$count] === "{") $a += 2;
+      g = cGen(n);
+    for (var str = '', arr = g.split('\n'), i = 0, l = 0; l < arr.length; l++) {
+      for (var last = arr[l].slice(-1), line = arr[l].split(''),
+          $c = 0, $a = 0, $s = 0; $c < line.length; $c++) {
+        if (line[$c] === "}" && $a <= 0) $s += 2;
+        else if (line[$c] === "}" && $a > 0) $a -= 2;
+        else if (line[$c] === "{") $a += 2;
       }
-      ind -= $s; // Subtract any subtractions
-      str += repeat(' ', ind) + arr[line];
-      ind += $a; // Add any additions
-      str += (lastChar !== "{" && lastChar !== "}") ? ";\n" : "\n";
+      str += repeat(' ', i -= $s) + arr[l];
+      i += $a; // Add any additions
+      str += (last !== "{" && last !== "}") ? ";\n" : "\n";
     }
     return str;
   };
@@ -800,9 +807,7 @@ function Compiler(program, $robotArray, $options, $evil) {
   acperl.declared = [];
   acperl.program = program || "";
   acperl.settings = acperl.construct(acperl.CompilerSettings, options);
-  acperl.compiled = acperl.codeStyle(
-    acperl.codeGen(acperl.parser(acperl.tokenizer(program))));
+  acperl.comp = acperl.codeGen(acperl.parser(acperl.tokenizer(program)));
   acperl.robot = acperl.construct(acperl.Robot, robotArray);
-  if (evil) acperl.construct(Function,
-    ["robot", acperl.compiled])(acperl.robot);
+  if (evil) acperl.construct(Function, ["robot", acperl.comp])(acperl.robot);
 }
