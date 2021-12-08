@@ -1,15 +1,15 @@
-# Credits
+# Dedication
 
  - I dedicate this compiler to Mr. Richard P. Siewert, a great computer science teacher at McMillen High School, in Murphy, TX, who helped to further my computer science education, and was a very great Christian overall. He sadly passed away during the making of this program.
- - The ACPERL specification rev. 2017 is the property of the College Board, and can be found [here](https://web.archive.org/web/20170711045615/https://secure-media.collegeboard.org/digitalServices/pdf/ap/ap-computer-science-principles-course-and-exam-description.pdf) on pages 118-124.
- - The [Super Tiny Compiler](https://git.io/compiler) by Jamie Kyle (jamiebuilds), which this was based off of.
 
-# What is this?
+# Description
 
-This is a compiler for the AP CS Principles Exam Reference Language (ACPERL), written in JavaScript. It's currently still under development.
+This is a compiler for the AP CS Principles Exam Reference Language (ACPERL), written in JavaScript. The ACPERL specification rev. 2017 is the property of the College Board, and can be found [here](https://web.archive.org/web/20170711045615/https://secure-media.collegeboard.org/digitalServices/pdf/ap/ap-computer-science-principles-course-and-exam-description.pdf) on pages 118-124.
+
+This program was based on the [Super Tiny Compiler](https://git.io/compiler) by Jamie Kyle (jamiebuilds).
 
 # How can I run this?
-As long as you don't claim it's yours, just follow one of these methods to use it, or some other method at your own risk:
+Here are some sample methods to run this code. However, don't claim it's yours in accordance with the license.
 
 ## Method 0 - GitHub Pages
 You can try it out [here](https://uint2048.github.io/acperl-compiler/Compiler.html).
